@@ -1,0 +1,198 @@
+.signup-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fc466b 0%, #3f5efb 100%);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.signup-form-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.signup-form-card h2 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Re-use form-group styles from LoginPage.css or global App.css if preferred */
+/* For now, duplicating for clarity, but consider centralizing common form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+.form-group input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.input-error {
+  border-color: rgba(255, 0, 0, 0.5) !important;
+}
+
+.tooltip-error {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(255, 0, 0, 0.6);
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+  z-index: 10;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+}
+
+.tooltip-error::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 10px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(255, 0, 0, 0.6) transparent transparent transparent;
+}
+
+.signup-button {
+  width: 100%;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  margin-bottom: 1rem;
+}
+
+.signup-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+/* Form Separator ("OR" line) */
+.form-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.5rem 0; /* Spacing above and below */
+  color: #888; /* Light gray for the text and lines */
+}
+
+.form-separator::before,
+.form-separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #ddd; /* Light line */
+}
+
+.form-separator span {
+  padding: 0 1rem; /* Spacing around the "OR" text */
+  font-size: 0.9rem;
+}
+
+/* Google Sign-Up Button */
+.google-signup-button {
+  width: 100%;
+  padding: 0.9rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  margin-bottom: 1rem;
+}
+
+.google-signup-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+/* If you add an icon later, you might style it like this */
+/* .google-signup-button svg {
+  margin-right: 8px;
+  width: 18px;
+  height: 18px;
+} */
+
+.login-link-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.login-link-text a {
+  color: #ffffff;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.login-link-text a:hover {
+  opacity: 0.8;
+} 

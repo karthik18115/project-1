@@ -1,0 +1,30 @@
+.emergency-contact-card {
+  background-color: #fffbe6; /* bg-yellow-50 */
+  border: 1px solid #fef3c7; /* border-yellow-200 */
+  border-left: 4px solid #f59e0b; /* border-l-yellow-500 */
+  padding: 1rem; /* p-4 */
+  border-radius: 6px; /* rounded-md */
+}
+
+.emergency-contact-card h4 {
+  margin-top: 0;
+  margin-bottom: 0.75rem; /* mb-3 */
+  font-size: 1rem; /* text-base */
+  font-weight: 600; /* font-semibold */
+  color: #78350f; /* text-yellow-800 */
+}
+
+.contact-entry {
+  margin-bottom: 0.5rem; /* mb-2 */
+}
+
+.contact-entry p {
+  margin: 0;
+  font-size: 0.875rem; /* text-sm */
+  color: #78350f; /* text-yellow-800 */
+  line-height: 1.4;
+}
+
+.contact-entry p strong {
+  font-weight: 500; /* font-medium */
+} 

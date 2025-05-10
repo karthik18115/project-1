@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark theme overrides for ReactQuill (Snow theme) */
+.dark .ql-toolbar {
+  background-color: theme('colors.slate.700');
+  border-color: theme('colors.slate.600') !important;
+}
+
+.dark .ql-toolbar .ql-stroke {
+  stroke: theme('colors.slate.300') !important;
+}
+.dark .ql-toolbar .ql-fill {
+  fill: theme('colors.slate.300') !important;
+}
+.dark .ql-toolbar button:hover .ql-stroke,
+.dark .ql-toolbar button:focus .ql-stroke,
+.dark .ql-toolbar button.ql-active .ql-stroke {
+  stroke: theme('colors.teal.400') !important;
+}
+.dark .ql-toolbar button:hover .ql-fill,
+.dark .ql-toolbar button:focus .ql-fill,
+.dark .ql-toolbar button.ql-active .ql-fill {
+  fill: theme('colors.teal.400') !important;
+}
+
+.dark .ql-picker-label {
+  color: theme('colors.slate.300') !important;
+}
+.dark .ql-picker-label:hover {
+  color: theme('colors.teal.400') !important;
+}
+
+.dark .ql-picker-options {
+  background-color: theme('colors.slate.600') !important;
+  border-color: theme('colors.slate.500') !important;
+}
+.dark .ql-picker-options .ql-picker-item {
+  color: theme('colors.slate.200') !important;
+}
+.dark .ql-picker-options .ql-picker-item:hover,
+.dark .ql-picker-options .ql-picker-item.ql-selected {
+  color: theme('colors.teal.300') !important;
+  background-color: theme('colors.slate.500') !important;
+}
+
+.dark .ql-container {
+  border-color: theme('colors.slate.600') !important;
+}
+
+.dark .ql-editor {
+  background-color: theme('colors.slate.700');
+  color: theme('colors.slate.100');
+}
+
+.dark .ql-editor.ql-blank::before {
+  color: theme('colors.slate.400') !important;
+}

@@ -1,0 +1,127 @@
+.notifications-panel {
+  position: absolute;
+  top: calc(100% + 10px); /* Position below the bell icon */
+  right: 0;
+  width: 350px;
+  max-height: 400px;
+  background-color: white; /* bg-white */
+  border-radius: 8px; /* rounded-lg */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+  z-index: 50; /* z-50 */
+  border: 1px solid #e5e7eb; /* border border-gray-200 */
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem; /* p-3 px-4 */
+  border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+}
+
+.panel-header h5 {
+  margin: 0;
+  font-size: 1rem; /* text-base */
+  font-weight: 600; /* font-semibold */
+}
+
+.close-panel-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem; /* text-2xl */
+  color: #9ca3af; /* text-gray-400 */
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+.close-panel-button:hover {
+  color: #374151; /* hover:text-gray-700 */
+}
+
+.mark-all-read-button {
+  font-size: 0.875rem; /* text-sm */
+  color: #3b82f6; /* text-blue-500 */
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem; /* py-2 px-4 */
+  cursor: pointer;
+  text-align: right;
+  border-bottom: 1px solid #e5e7eb; /* border-b border-gray-200 */
+}
+.mark-all-read-button:hover {
+  text-decoration: underline;
+}
+
+.notifications-list {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.notification-item {
+  padding: 0.75rem 1rem; /* p-3 px-4 */
+  border-bottom: 1px solid #f3f4f6; /* border-b border-gray-100 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-item.unread {
+  background-color: #f3f4f6; /* bg-gray-100 for unread items */
+}
+
+.notification-link {
+  text-decoration: none;
+  color: inherit;
+  flex-grow: 1;
+}
+
+.notification-message {
+  font-size: 0.875rem; /* text-sm */
+  color: #374151; /* text-gray-700 */
+  margin: 0 0 0.25rem 0; /* mb-1 */
+}
+
+.notification-timestamp {
+  font-size: 0.75rem; /* text-xs */
+  color: #6b7280; /* text-gray-500 */
+}
+
+.mark-as-read-btn {
+  background: none;
+  border: 1px solid #d1d5db; /* border-gray-300 */
+  color: #3b82f6; /* text-blue-500 */
+  font-size: 0.75rem; /* text-xs */
+  padding: 0.25rem 0.5rem; /* px-2 py-1 */
+  border-radius: 4px; /* rounded */
+  cursor: pointer;
+  margin-left: 0.5rem; /* ml-2 */
+}
+.mark-as-read-btn:hover {
+  background-color: #eff6ff; /* hover:bg-blue-50 */
+}
+
+.no-notifications {
+  padding: 1rem; /* p-4 */
+  text-align: center;
+  color: #6b7280; /* text-gray-500 */
+  font-size: 0.875rem; /* text-sm */
+}
+
+.panel-footer {
+  padding: 0.75rem 1rem; /* p-3 px-4 */
+  border-top: 1px solid #e5e7eb; /* border-t border-gray-200 */
+  text-align: center;
+}
+
+.view-all-link {
+  font-size: 0.875rem; /* text-sm */
+  color: #3b82f6; /* text-blue-500 */
+  text-decoration: none;
+  font-weight: 500; /* font-medium */
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+} 

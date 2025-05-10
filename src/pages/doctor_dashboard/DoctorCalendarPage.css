@@ -1,0 +1,41 @@
+/* Styles for DoctorCalendarPage */
+.doctor-calendar-page {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Space between sections */
+}
+
+.doctor-calendar-page .page-title {
+  font-size: 1.8em;
+  color: #333;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.doctor-calendar-page section h3 {
+  font-size: 1.4em;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.calendar-section .calendar-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.calendar-section .calendar-placeholder {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  color: #777;
+  border: 1px dashed #ddd;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} 
