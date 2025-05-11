@@ -31,11 +31,16 @@ export const useAppointments = () => useContext(AppointmentContext);
 
 // Keep getSidebarLinks for now, will adjust paths later
 const getSidebarLinks = (role) => {
-  const lowerRole = role?.toLowerCase();
-  const emergencyRoles = ['emergency', 'emergencydoctor', 'emergency_doctor'];
-  const prefix = emergencyRoles.includes(lowerRole) ? '/app/emergency' : `/app/${lowerRole}`;
+  // Process the role to remove "ROLE_" prefix and ensure it's lowercase for matching
+  const processedRole = role?.toUpperCase().startsWith('ROLE_') 
+    ? role.substring(5).toLowerCase()
+    : role?.toLowerCase();
 
-  switch (lowerRole) {
+  const lowerRole = processedRole; // Use the processedRole for switch and prefix
+  const emergencyRoles = ['emergency', 'emergencydoctor', 'emergency_doctor'];
+  const prefix = emergencyRoles.includes(lowerRole) ? '/app/emergency' : `/app/${lowerRole}`; // prefix will now be like /app/patient
+
+  switch (lowerRole) { // lowerRole will now be like 'patient'
     case 'patient':
       return [
         { label: 'Overview', path: `${prefix}/dashboard`, icon: <UserIcon /> },
@@ -121,6 +126,7 @@ function HomePage() {
   useEffect(() => {
     const role = localStorage.getItem('userRole');
     const token = localStorage.getItem('authToken');
+    console.log('[HomePage] useEffect: role from localStorage:', role);
     if (!token || !role) {
       setUserRole('Unknown');
     } else {

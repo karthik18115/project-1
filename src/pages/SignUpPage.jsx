@@ -9,7 +9,7 @@ function SignUpPage() {
   const [generalError, setGeneralError] = useState(''); // For backend errors
   const [successMessage, setSuccessMessage] = useState(''); // For success feedback
   const [formData, setFormData] = useState({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -41,14 +41,14 @@ function SignUpPage() {
   const [documentName, setDocumentName] = useState(''); // Display selected file name
 
   const [errors, setErrors] = useState({
-    name: '',
+    fullName: '',
     email: '',
     password: '',
     confirmPassword: ''
   });
 
   const validateName = (value) => {
-    return !value ? 'Name is required' : '';
+    return !value ? 'Full Name is required' : '';
   };
 
   const validateEmail = (value) => {
@@ -77,8 +77,8 @@ function SignUpPage() {
     }));
 
     // Validate the field on change
-    if (name === 'name') {
-      setErrors(prev => ({ ...prev, name: validateName(value) }));
+    if (name === 'fullName') {
+      setErrors(prev => ({ ...prev, fullName: validateName(value) }));
     } else if (name === 'email') {
       setErrors(prev => ({ ...prev, email: validateEmail(value) }));
     } else if (name === 'password') {
@@ -113,13 +113,14 @@ function SignUpPage() {
   };
 
   const handleSignUp = async (e) => {
+    console.log('handleSignUp CALLED');
     e.preventDefault();
     setGeneralError(''); // Clear previous general errors
     setSuccessMessage(''); // Clear previous success messages
     
     // Validate all fields
     const newErrors = {
-      name: validateName(formData.name),
+      fullName: validateName(formData.fullName),
       email: validateEmail(formData.email),
       password: validatePassword(formData.password),
       confirmPassword: validateConfirmPassword(formData.confirmPassword, formData.password)
@@ -176,8 +177,10 @@ function SignUpPage() {
   };
 
   const handleGoogleSignUp = () => {
-    console.log('Sign Up with Google clicked');
-    // Placeholder for Google OAuth logic
+    console.log('handleGoogleSignUp CALLED');
+    console.log('Redirecting to Google OAuth...');
+    // Redirect the entire window to the backend OAuth2 endpoint
+    window.location.href = 'http://localhost:8081/oauth2/authorization/google';
   };
 
   return (
@@ -247,23 +250,23 @@ function SignUpPage() {
             )}
             <form onSubmit={handleSignUp} className="space-y-4 mb-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Full Name
                 </label>
                 <input
-                  id="name"
-                  name="name"
+                  id="fullName"
+                  name="fullName"
                   type="text"
                   autoComplete="name"
                   required
-                  value={formData.name}
+                  value={formData.fullName}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border ${ 
-                    errors.name ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
+                    errors.fullName ? 'border-red-500' : 'border-slate-300 dark:border-slate-600'
                   } rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500`}
                   placeholder="John Doe"
                 />
-                {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
+                {errors.fullName && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.fullName}</p>}
               </div>
 
               <div>

@@ -7,8 +7,8 @@ const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown
 
 export default function EditMedicalInfoForm({ initialData, onSave, onCancel, isLoading, formId }) {
   const [bloodGroup, setBloodGroup] = useState('');
-  const [allergies, setAllergies] = useState([]);
-  const [chronicConditions, setChronicConditions] = useState([]);
+  const [allergies, setAllergies] = useState([]); // Will store { id: string, name: string, severity: string }
+  const [chronicConditions, setChronicConditions] = useState([]); // Will store { id: string, name: string }
   
   const [newAllergyName, setNewAllergyName] = useState('');
   const [newAllergySeverity, setNewAllergySeverity] = useState(ALLERGY_SEVERITIES[0]);
@@ -18,13 +18,21 @@ export default function EditMedicalInfoForm({ initialData, onSave, onCancel, isL
   useEffect(() => {
     if (initialData) {
       setBloodGroup(initialData.bloodGroup || BLOOD_GROUPS[BLOOD_GROUPS.length -1]);
-      setAllergies(initialData.allergies ? [...initialData.allergies] : []);
-      setChronicConditions(initialData.chronicConditions ? [...initialData.chronicConditions] : []);
+      // Backend sends Set<String> for allergies and chronicConditions.
+      // Form internally uses objects for list keys and additional info like severity.
+      setAllergies(initialData.allergies?.map((name, index) => ({ 
+        id: `initial_a_${index}_${Date.now()}`,
+        name,
+        severity: 'Unknown' // Default severity, as backend only stores names
+      })) || []);
+      setChronicConditions(initialData.chronicConditions?.map((name, index) => ({ 
+        id: `initial_c_${index}_${Date.now()}`,
+        name 
+      })) || []);
     }
   }, [initialData]);
 
   const validateForm = () => {
-    // Basic validation, can be expanded
     const newErrors = {};
     if (!bloodGroup) newErrors.bloodGroup = 'Blood group is required.';
     setErrors(newErrors);
@@ -34,7 +42,14 @@ export default function EditMedicalInfoForm({ initialData, onSave, onCancel, isL
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      onSave({ bloodGroup, allergies, chronicConditions });
+      // Extract just the names for saving, as backend expects Set<String>
+      const allergiesToSave = allergies.map(a => a.name);
+      const conditionsToSave = chronicConditions.map(c => c.name);
+      onSave({ 
+        bloodGroup, 
+        allergies: allergiesToSave, 
+        chronicConditions: conditionsToSave 
+      });
     }
   };
 
@@ -44,7 +59,8 @@ export default function EditMedicalInfoForm({ initialData, onSave, onCancel, isL
       setErrors(prev => ({...prev, newAllergy: 'Allergy name cannot be empty.'}));
       return;
     }
-    setAllergies([...allergies, { id: `new_a_${Date.now()}`, name: newAllergyName, severity: newAllergySeverity }]);
+    // Use a more robust ID if these items were to be individually editable later from backend
+    setAllergies([...allergies, { id: `form_a_${Date.now()}_${Math.random()}`.replace('.',''), name: newAllergyName, severity: newAllergySeverity }]);
     setNewAllergyName('');
     setNewAllergySeverity(ALLERGY_SEVERITIES[0]);
     setErrors(prev => ({...prev, newAllergy: null}));
@@ -59,12 +75,13 @@ export default function EditMedicalInfoForm({ initialData, onSave, onCancel, isL
         setErrors(prev => ({...prev, newCondition: 'Condition name cannot be empty.'}));
         return;
     }
-    setChronicConditions([...chronicConditions, { id: `new_c_${Date.now()}`, name: newConditionName }]);
+    setChronicConditions([...chronicConditions, { id: `form_c_${Date.now()}_${Math.random()}`.replace('.',''), name: newConditionName }]);
     setNewConditionName('');
     setErrors(prev => ({...prev, newCondition: null}));
   };
   const handleRemoveCondition = (idToRemove) => {
-    setChronicConditions(conditions => conditions.filter(c => c.id !== idToRemove));
+    // Ensure correct state name if it was 'conditions' previously
+    setChronicConditions(prevConditions => prevConditions.filter(c => c.id !== idToRemove)); 
   };
 
   const inputClass = "w-full px-3 py-2 rounded-md bg-slate-50 text-slate-700 border border-slate-300 focus:ring-teal-500 focus:border-teal-500 placeholder-slate-400";

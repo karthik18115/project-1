@@ -36,13 +36,12 @@ export default function EditInsuranceForm({ initialData, onSave, onCancel, isLoa
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // For saving, we might want to re-generate maskedPolicyId if policyId changes
-      const saveData = { 
-        ...formData, 
-        // Example: if policyId is ABC12345, maskedPolicyId could be ******345
-        maskedPolicyId: formData.policyId.length > 4 ? `********${formData.policyId.slice(-4)}` : formData.policyId 
-      };
-      onSave(saveData);
+      // Pass only the core editable fields. Masking is a display concern.
+      onSave({ 
+        provider: formData.provider,
+        policyId: formData.policyId,
+        memberId: formData.memberId
+      });
     }
   };
 

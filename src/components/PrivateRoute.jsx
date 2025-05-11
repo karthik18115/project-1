@@ -3,21 +3,36 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 const PrivateRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
-  // Mock authentication check - in a real app, this would check for a valid token in localStorage or context
   const isAuthenticated = !!localStorage.getItem('authToken');
-  // Mock user role - in a real app, this would be fetched from user data or context
-  const userRole = localStorage.getItem('userRole') || 'patient';
+  const rawUserRole = localStorage.getItem('userRole');
+
+  // Process the role from localStorage to remove "ROLE_" prefix and convert to uppercase
+  const processedUserRole = rawUserRole?.toUpperCase().startsWith('ROLE_')
+    ? rawUserRole.substring(5).toUpperCase()
+    : rawUserRole?.toUpperCase();
+
+  console.log('[PrivateRoute] Current Location:', location.pathname);
+  console.log('[PrivateRoute] isAuthenticated:', isAuthenticated);
+  console.log('[PrivateRoute] rawUserRole from localStorage:', rawUserRole);
+  console.log('[PrivateRoute] processedUserRole for check:', processedUserRole);
+  console.log('[PrivateRoute] allowedRoles:', allowedRoles);
 
   if (!isAuthenticated) {
+    console.log('[PrivateRoute] Not authenticated, redirecting to /login');
     // Redirect to login if not authenticated
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
+  // Ensure allowedRoles are also uppercase for consistent comparison
+  const upperAllowedRoles = allowedRoles.map(role => role.toUpperCase());
+
+  if (allowedRoles && !upperAllowedRoles.includes(processedUserRole)) {
+    console.log(`[PrivateRoute] Role mismatch: processedUserRole \"${processedUserRole}\" not in allowedRoles [${upperAllowedRoles.join(', ')}]. Redirecting to /unauthorized`);
     // Redirect to unauthorized or home page if role doesn't match
     return <Navigate to="/unauthorized" replace />;
   }
 
+  console.log('[PrivateRoute] Access granted.');
   return children;
 };
 

@@ -1,26 +1,35 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, Outlet } from 'react-router-dom';
 import CustomButton from '../components/ui/Button';
+import { useAuth } from '../context/AuthContext';
 
 const LOGIN_IMAGE_URL = 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80';
 
 // Helper function to determine dashboard path based on user role
 const getDashboardPath = (role) => {
-  switch (role?.toLowerCase()) {
+  // Remove "ROLE_" prefix (case-insensitive) and then convert to lowercase for matching
+  const processedRole = role?.toUpperCase().startsWith('ROLE_') 
+    ? role.substring(5).toLowerCase() 
+    : role?.toLowerCase();
+
+  switch (processedRole) {
     case 'admin':
       return '/admin/overview';
     case 'patient':
       return '/app/patient/dashboard';
     case 'doctor':
-      return '/app/doctor/dashboard';
+      return '/app/doctor/overview';
     case 'pharmacy':
       return '/app/pharmacy/dashboard';
-    case 'labcenter': // Corresponds to LAB_STAFF in App.jsx roles
+    case 'labcenter': // Changed from lab_staff to labcenter to match dev button and App.jsx role
       return '/app/labcenter/dashboard';
-    case 'emergency': // Corresponds to EMERGENCY_DOCTOR in App.jsx roles
-    case 'emergency_doctor':
+    case 'emergency_doctor': // Assuming role is EMERGENCY_DOCTOR or ROLE_EMERGENCY_DOCTOR
       return '/app/emergency/dashboard';
+    // Add other specific roles if necessary, e.g. if 'emergency' is a distinct role
+    // case 'emergency': 
+    //   return '/app/emergency/dashboard'; 
     default:
+      console.warn(`Unknown or unhandled role for navigation: ${role} (processed to: ${processedRole})`);
       return '/'; // Fallback to home or a generic dashboard
   }
 };
@@ -35,6 +44,7 @@ function LoginPage() {
   const [generalError, setGeneralError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const auth = useAuth();
 
   const validateEmail = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -90,11 +100,19 @@ function LoginPage() {
             setTwoFactorRequired(true);
             setGeneralError(data.message);
           } else {
-            console.log('Login successful:', data);
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('userRole', data.role ? data.role.toUpperCase() : '');
+            console.log('Login API response data:', data);
+            const determinedPath = getDashboardPath(data.role);
+            console.log(`Login role from API: "${data.role}", Processed role for path: "${data.role?.toUpperCase().startsWith('ROLE_') ? data.role.substring(5).toLowerCase() : data.role?.toLowerCase()}", Determined path: "${determinedPath}"`);
             
-            navigate(getDashboardPath(data.role));
+            const userData = {
+              token: data.token,
+              role: data.role ? data.role.toUpperCase() : null,
+              uuid: data.uuid,
+              fullName: data.fullName,
+              email: data.email
+            };
+            auth.login(data.token, userData);
+            navigate(determinedPath);
           }
         } else {
           console.error('Login failed:', data);
@@ -110,8 +128,14 @@ function LoginPage() {
   };
 
   const handleDevLogin = (role) => {
-    localStorage.setItem('authToken', 'dev-token');
-    localStorage.setItem('userRole', role.toUpperCase());
+    const devEmail = `dev-${role}@example.com`;
+    const devUserData = {
+        role: role.toUpperCase(),
+        uuid: 'dev-uuid-' + role,
+        fullName: `Dev ${role.charAt(0).toUpperCase() + role.slice(1)} User`,
+        email: devEmail
+    };
+    auth.login('dev-token', devUserData);
     navigate(getDashboardPath(role));
   };
 
@@ -258,57 +282,33 @@ function LoginPage() {
               </div>
             </form>
 
-            <div className="text-left">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Don't have an account?{' '}
-                <Link to="/signup" className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400 dark:hover:text-teal-300">
-                  Sign up
-                </Link>
-              </p>
+            {/* Footer links */}
+            <div className="text-sm text-center">
+              <Link to="/signup" className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400 dark:hover:text-teal-300">
+                Don't have an account? Sign up
+              </Link>
             </div>
-
-            {/* Development Login Section */}
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 text-center mb-4">For Development Only</h3>
-              <div className="grid grid-cols-2 gap-2 mx-auto">
-                <button
-                  onClick={() => handleDevLogin('patient')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  Patient Dashboard
-                </button>
-                <button
-                  onClick={() => handleDevLogin('doctor')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  Doctor Dashboard
-                </button>
-                <button
-                  onClick={() => handleDevLogin('pharmacy')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  Pharmacy Dashboard
-                </button>
-                <button
-                  onClick={() => handleDevLogin('admin')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  Admin Dashboard
-                </button>
-                <button
-                  onClick={() => handleDevLogin('labcenter')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  Lab Center Dashboard
-                </button>
-                <button
-                  onClick={() => handleDevLogin('emergency_doctor')}
-                  className="text-xs py-2 px-2 border border-slate-300 dark:border-slate-600 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-center"
-                >
-                  ER Doctor Dashboard
-                </button>
+            
+            {/* Development Quick Login Buttons */}
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-center text-sm text-slate-600 dark:text-slate-400 mb-4">For Development Only - Quick Logins:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {/* For Development Only */}
+                  {/* <CustomButton onClick={() => handleDevLogin('patient')} variant="secondary_alt" size="sm">Patient Dashboard</CustomButton> */}
+                  {/* For Development Only */}
+                  {/* <CustomButton onClick={() => handleDevLogin('doctor')} variant="secondary_alt" size="sm">Doctor Dashboard</CustomButton> */}
+                  {/* For Development Only */}
+                  <CustomButton onClick={() => handleDevLogin('pharmacy')} variant="secondary_alt" size="sm">Pharmacy Dashboard</CustomButton>
+                  {/* For Development Only */}
+                  <CustomButton onClick={() => handleDevLogin('admin')} variant="secondary_alt" size="sm">Admin Dashboard</CustomButton>
+                  {/* For Development Only */}
+                  <CustomButton onClick={() => handleDevLogin('labcenter')} variant="secondary_alt" size="sm">Lab Center Dashboard</CustomButton>
+                  {/* For Development Only */}
+                  <CustomButton onClick={() => handleDevLogin('emergency_doctor')} variant="secondary_alt" size="sm">ER Doctor Dashboard</CustomButton>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -26,6 +26,8 @@ import {
   DocumentTextIcon as RecordsIcon,
   ArrowRightIcon,
 } from '../../components/icons';
+import { Link } from 'react-router-dom';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 // Register ChartJS components
 ChartJS.register(
@@ -174,6 +176,28 @@ export default function PatientDashboardOverview() {
             Welcome back, {isLoading ? <Skeleton width={100} inline={true} /> : (patientData?.name || 'User')}! Here's your health at a glance.
         </p>
       </header>
+
+      {/* Profile Update Notification */}
+      {!isLoading && patientData && !patientData.profileSetupComplete && (
+        <Card className="mb-6 bg-yellow-50 border border-yellow-300 p-4">
+          <div className="flex items-start">
+            <InformationCircleIcon className="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0" />
+            <div className="flex-grow">
+              <h3 className="text-md font-semibold text-yellow-700">Complete Your Profile</h3>
+              <p className="text-sm text-yellow-600 mt-1">
+                Help us provide you with the best care by completing your profile information. 
+                Some important details like Date of Birth or Address might be missing.
+              </p>
+              <Link 
+                to="/app/patient/profile"
+                className="mt-2 inline-block text-sm font-medium text-yellow-700 hover:text-yellow-800 underline"
+              >
+                Update Profile Now &rarr;
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <section aria-labelledby="summary-title">
         <h2 id="summary-title" className="sr-only">Health Summary</h2>

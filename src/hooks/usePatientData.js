@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext'; // Assuming AuthContext provides getToken()
 
 // --- MOCK DATA --- 
 const MOCK_PATIENT_DATA = {
@@ -50,27 +51,57 @@ function usePatientData() {
   const [patientData, setPatientData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { getToken } = useAuth(); // Or however you access the token
 
   useEffect(() => {
-    // Simulate fetching data
-    const fetchPatientData = () => {
+    const fetchPatientData = async () => {
       setIsLoading(true);
       setError(null);
-      // Simulate API call delay
-      setTimeout(() => {
-        try {
-          // Use mock data instead of fetch
-          setPatientData(MOCK_PATIENT_DATA);
-          setIsLoading(false);
-        } catch (err) {
-          setError('Failed to process mock patient data'); // Should not happen with static mock data
-          setIsLoading(false);
+      const token = getToken();
+
+      if (!token) {
+        setError('No authentication token found. Please log in.');
+        setIsLoading(false);
+        setPatientData(null); // Clear any stale data
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/patients/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+             setError('Unauthorized. Please log in again.');
+          } else {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to fetch patient data' }));
+            setError(errorData.message || `HTTP error! status: ${response.status}`);
+          }
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      }, 750); // 750ms delay
+
+        const data = await response.json();
+        // Map the DTO to the structure expected by PatientDashboardOverview if necessary
+        // For now, assume the DTO structure is close enough or PatientDashboardOverview can adapt.
+        setPatientData(data);
+
+      } catch (err) {
+        console.error("Error fetching patient data:", err);
+        // setError(err.message || 'An unexpected error occurred'); // Already set in most cases
+        if (!error) { // if error wasn't set by response status check
+            setError(err.message || 'An unexpected error occurred while fetching data.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchPatientData();
-  }, []);
+  }, [getToken, error]); // Add error to dependency array to avoid potential infinite loops if setError causes re-render
 
   return { patientData, isLoading, error };
 }

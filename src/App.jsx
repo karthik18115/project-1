@@ -50,6 +50,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import AccountSettingsPage from './pages/AccountSettingsPage';
 import DoctorDashboardPage from './pages/DoctorDashboardPage';
 import DoctorSettingsPage from './pages/doctor_dashboard/DoctorSettingsPage';
+// import DoctorPatientsPage from './pages/doctor_dashboard/DoctorPatientsPage'; // Reverted import
 
 // Other dashboards
 import PharmacyDashboardOverview from './pages/pharmacy_dashboard/PharmacyDashboardOverview';
@@ -120,8 +121,7 @@ function App() {
             }
           >
             <Route index element={<Navigate to="overview" replace />} />
-            <Route path="patient/:patientId/profile" element={<DoctorViewPatientProfile />} />
-            <Route path="dashboard" element={<DoctorDashboardOverview />} />
+            <Route path="patient/:patientUuid/profile" element={<DoctorViewPatientProfile />} />
             <Route path="overview" element={<DoctorDashboardOverview />} />
             <Route path="queue" element={<DoctorPatientQueue />} />
             <Route path="appointments" element={<DoctorAppointmentsPage />} />

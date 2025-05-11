@@ -7,6 +7,7 @@ const navItems = [
   { to: '/app/doctor/overview', label: 'Overview', icon: <ChartIcon /> },
   { to: '/app/doctor/appointments', label: 'Appointments', icon: <CalendarIcon /> },
   { to: '/app/doctor/queue', label: 'Patient Queue', icon: <PatientsIcon /> },
+  // { to: '/app/doctor/patients', label: 'Patients', icon: <PatientsIcon /> }, // Reverted new item
   { to: '/app/doctor/calendar', label: 'Calendar', icon: <CalendarIcon /> },
   { to: '/app/doctor/messages', label: 'Messages', icon: <NotesIcon /> },
   { to: '/app/doctor/lab-results', label: 'Lab Results', icon: <LabIcon /> },

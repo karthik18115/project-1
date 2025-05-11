@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import EmergencyContactDisplay from '../../components/dashboard_shared/EmergencyContactDisplay';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
@@ -11,24 +12,29 @@ import { CogIcon } from '../../components/icons';
 import { toast } from 'react-toastify';
 
 export default function PatientProfile() {
-  // Mock data - in a real app, this would come from state/props/API
+  const { getToken } = useAuth();
   const [userProfile, setUserProfile] = useState({
-    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
-    fullName: "Johnathan Andrew Doe",
-    email: "john.doe@example.com",
-    dateOfBirth: "1990-01-15",
-    phoneNumber: "(555) 123-4567",
-    address: "123 Health St, Wellness City, HC 12345",
-    bloodGroup: "O+",
-    allergies: [{id: 'a1', name: "Peanuts", severity: "High"}, {id: 'a2', name: "Penicillin", severity: "Medium"}],
-    chronicConditions: [{id: 'c1', name: "Hypertension"}, {id: 'c2', name: "Asthma (Mild)"}],
-    insurance: { provider: "HealthFirst Plus", policyId: "HF123456789", maskedPolicyId: "********6789", memberId: "MEMBERIDXYZ" }
+    avatarUrl: '',
+    fullName: "",
+    email: "",
+    dateOfBirth: null,
+    phoneNumber: "",
+    address: "",
+    bloodGroup: "",
+    allergies: [],
+    chronicConditions: [],
+    insurance: { 
+        provider: "", 
+        policyId: "", 
+        maskedPolicyId: "",
+        memberId: "" 
+    },
+    profileSetupComplete: false
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [emergencyContacts, setEmergencyContacts] = useState([
-    { id: 'ec1', name: "Jane Doe", relationship: "Spouse", phone: "555-123-4567" },
-    { id: 'ec2', name: "Mike Smith", relationship: "Friend", phone: "555-987-6543" },
-  ]);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
 
   const [isPersonalInfoModalOpen, setIsPersonalInfoModalOpen] = useState(false);
   const [isMedicalInfoModalOpen, setIsMedicalInfoModalOpen] = useState(false);
@@ -40,6 +46,53 @@ export default function PatientProfile() {
   const insuranceFormRef = useRef(null);
   const emergencyContactsFormRef = useRef(null);
 
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const token = getToken();
+      if (!token) {
+        setError('Not authenticated');
+        setIsLoading(false);
+        return;
+      }
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch('/api/patients/me', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch profile data: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setUserProfile({
+          avatarUrl: data.avatarUrl || '',
+          fullName: data.name || '',
+          email: data.email || '',
+          dateOfBirth: data.dateOfBirth,
+          phoneNumber: data.mobile || '',
+          address: data.address || '',
+          bloodGroup: data.bloodGroup || '',
+          allergies: data.allergies || [],
+          chronicConditions: data.chronicConditions || [],
+          insurance: {
+            provider: data.insuranceProvider || '',
+            policyId: data.insurancePolicyId || '',
+            maskedPolicyId: data.insurancePolicyId ? `********${data.insurancePolicyId.slice(-4)}` : '',
+            memberId: data.insuranceMemberId || ''
+          },
+          profileSetupComplete: data.profileSetupComplete || false
+        });
+      } catch (err) {
+        setError(err.message);
+        toast.error(`Error fetching profile: ${err.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [getToken]);
+
   const renderDetailItem = (label, value) => (
     <div key={label} className="grid grid-cols-3 gap-2 py-2 border-b border-slate-200 last:border-b-0">
       <dt className="col-span-1 font-semibold text-slate-600 tracking-wide">{label}</dt>
@@ -49,60 +102,117 @@ export default function PatientProfile() {
   
   const openPersonalInfoModal = () => setIsPersonalInfoModalOpen(true);
   const closePersonalInfoModal = () => setIsPersonalInfoModalOpen(false);
-  const handleSavePersonalInfo = (updatedData) => {
-    console.log("Saving Personal Info:", updatedData);
+  const handleSavePersonalInfo = async (formData) => {
+    const token = getToken();
+    if (!token) {
+      toast.error('Authentication session expired. Please log in again.');
+      return;
+    }
     setIsProcessing(true);
-    setTimeout(() => {
-      setUserProfile(prevProfile => ({ ...prevProfile, ...updatedData }));
-      setIsProcessing(false);
+    try {
+      const response = await fetch('/api/patients/me', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: `HTTP error ${response.status}` }));
+        throw new Error(errorData.message || `Failed to save personal info: ${response.statusText}`);
+      }
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
+      toast.success('Personal information updated successfully!');
       closePersonalInfoModal();
-    }, 1000);
+    } catch (err) {
+      toast.error(`Error saving personal info: ${err.message}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const openMedicalInfoModal = () => setIsMedicalInfoModalOpen(true);
   const closeMedicalInfoModal = () => setIsMedicalInfoModalOpen(false);
-  const handleSaveMedicalInfo = (updatedMedicalData) => {
-    console.log("Saving Medical Info:", updatedMedicalData);
+  const handleSaveMedicalInfo = async (formData) => {
+    const token = getToken();
+    if (!token) {
+      toast.error('Authentication session expired. Please log in again.');
+      return;
+    }
     setIsProcessing(true);
-    setTimeout(() => {
-      setUserProfile(prevProfile => ({
-        ...prevProfile,
-        bloodGroup: updatedMedicalData.bloodGroup,
-        allergies: updatedMedicalData.allergies,
-        chronicConditions: updatedMedicalData.chronicConditions,
-      }));
-      setIsProcessing(false);
-      closeMedicalInfoModal();
+    try {
+      const payload = {
+        ...userProfile,
+        bloodGroup: formData.bloodGroup,
+        allergies: formData.allergies.map(a => typeof a === 'string' ? a : a.name),
+        chronicConditions: formData.chronicConditions.map(c => typeof c === 'string' ? c : c.name),
+      };
+      const response = await fetch('/api/patients/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save medical info');
+      }
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
       toast.success('Medical information updated successfully!');
-    }, 1000);
+      closeMedicalInfoModal();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const openInsuranceModal = () => setIsInsuranceModalOpen(true);
   const closeInsuranceModal = () => setIsInsuranceModalOpen(false);
-  const handleSaveInsuranceInfo = (updatedInsuranceData) => {
-    console.log("Saving Insurance Info:", updatedInsuranceData);
+  const handleSaveInsuranceInfo = async (formData) => {
+    const token = getToken();
+    if (!token) {
+      toast.error('Authentication session expired. Please log in again.');
+      return;
+    }
     setIsProcessing(true);
-    setTimeout(() => {
-      setUserProfile(prevProfile => ({
-        ...prevProfile,
-        insurance: updatedInsuranceData,
-      }));
-      setIsProcessing(false);
-      closeInsuranceModal();
+    try {
+      const payload = {
+        ...userProfile,
+        insuranceProvider: formData.provider,
+        insurancePolicyId: formData.policyId,
+        insuranceMemberId: formData.memberId,
+      };
+      const response = await fetch('/api/patients/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save insurance info');
+      }
+      const updatedProfile = await response.json();
+      setUserProfile(updatedProfile);
       toast.success('Insurance details updated successfully!');
-    }, 1000);
+      closeInsuranceModal();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const openEmergencyContactsModal = () => setIsEmergencyContactsModalOpen(true);
   const closeEmergencyContactsModal = () => setIsEmergencyContactsModalOpen(false);
   const handleSaveEmergencyContacts = (updatedContacts) => {
-    console.log("Saving Emergency Contacts:", updatedContacts);
+    console.log("Saving Emergency Contacts (Mock):", updatedContacts);
     setIsProcessing(true);
     setTimeout(() => {
       setEmergencyContacts(updatedContacts);
       setIsProcessing(false);
       closeEmergencyContactsModal();
-      toast.success('Emergency contacts updated successfully!');
+      toast.success('Emergency contacts updated (mock save)!');
     }, 1000);
   };
 
@@ -123,7 +233,7 @@ export default function PatientProfile() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        {/* Personal Information */}
+        {/* Personal Information Card */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-700 tracking-wide">Personal Information</h2>
@@ -134,14 +244,14 @@ export default function PatientProfile() {
           </div>
           <dl className="space-y-1">
             {renderDetailItem("Full Name", userProfile.fullName)}
-            {renderDetailItem("Date of Birth", userProfile.dateOfBirth)}
+            {renderDetailItem("Date of Birth", userProfile.dateOfBirth ? new Date(userProfile.dateOfBirth).toLocaleDateString() : 'N/A')}
             {renderDetailItem("Email Address", userProfile.email)}
             {renderDetailItem("Phone Number", userProfile.phoneNumber)}
             {renderDetailItem("Address", userProfile.address)}
           </dl>
         </Card>
 
-        {/* Medical Information */}
+        {/* Medical Information Card */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-700 tracking-wide">Medical Information</h2>
@@ -155,25 +265,25 @@ export default function PatientProfile() {
           </dl>
           
           <h3 className="text-lg font-semibold text-slate-700 mb-2">Allergies</h3>
-          {userProfile.allergies.length > 0 ? (
+          {userProfile.allergies && userProfile.allergies.length > 0 ? (
             <ul className="flex flex-wrap gap-2">
-              {userProfile.allergies.map(a => (
-                <li key={a.id} className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm ${a.severity === 'High' ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-blue-100 text-blue-700 border border-blue-200'}`}>{a.name} ({a.severity})</li>
+              {userProfile.allergies.map((a, index) => (
+                <li key={`allergy-${index}`} className={`px-3 py-1.5 rounded-full text-xs font-medium shadow-sm bg-blue-100 text-blue-700 border border-blue-200`}>{typeof a === 'string' ? a : a.name} {typeof a !== 'string' && a.severity ? `(${a.severity})` : ''}</li>
               ))}
             </ul>
           ) : <p className="text-slate-500">No allergies listed.</p>}
 
           <h3 className="text-lg font-semibold text-slate-700 mt-6 mb-2">Chronic Conditions</h3>
-          {userProfile.chronicConditions.length > 0 ? (
+          {userProfile.chronicConditions && userProfile.chronicConditions.length > 0 ? (
             <ul className="flex flex-wrap gap-2">
-              {userProfile.chronicConditions.map(c => (
-                <li key={c.id} className={`px-3 py-1.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300 shadow-sm`}>{c.name}</li>
+              {userProfile.chronicConditions.map((c, index) => (
+                <li key={`condition-${index}`} className={`px-3 py-1.5 rounded-full text-xs font-medium bg-slate-200 text-slate-700 border border-slate-300 shadow-sm`}>{typeof c === 'string' ? c : c.name}</li>
               ))}
             </ul>
           ) : <p className="text-slate-500">No chronic conditions listed.</p>}
         </Card>
 
-        {/* Insurance Details */}
+        {/* Insurance Details Card */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-700 tracking-wide">Insurance Details</h2>
@@ -183,20 +293,22 @@ export default function PatientProfile() {
             </Button>
           </div>
           <dl className="space-y-1">
-            {renderDetailItem("Provider", userProfile.insurance.provider)}
+            {renderDetailItem("Provider", userProfile.insurance?.provider || 'N/A')}
             {renderDetailItem("Policy ID", 
               () => (
                 <span className="flex items-center">
-                  {userProfile.insurance.maskedPolicyId}
-                  <Button variant="outline" size="xs" className="ml-2 text-xs !p-1" onClick={() => alert('Toggle visibility NI')}>(Show)</Button>
+                  {userProfile.insurance?.maskedPolicyId || 'N/A'}
+                  {userProfile.insurance?.policyId && 
+                    <Button variant="outline" size="xs" className="ml-2 text-xs !p-1" onClick={() => alert('Toggle visibility NI')}>(Show)</Button>
+                  }
                 </span>
               )
             )}
-            {renderDetailItem("Member ID", userProfile.insurance.memberId)}
+            {renderDetailItem("Member ID", userProfile.insurance?.memberId || 'N/A')}
           </dl>
         </Card>
 
-        {/* Emergency Contacts */}
+        {/* Emergency Contacts Card */}
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-slate-700 tracking-wide">Emergency Contacts</h2>
@@ -209,6 +321,7 @@ export default function PatientProfile() {
         </Card>
       </div>
 
+      {/* Modals ... ensure these are outside the grid but inside the main div */}
       <Modal 
         isOpen={isPersonalInfoModalOpen} 
         onClose={closePersonalInfoModal} 
@@ -262,7 +375,7 @@ export default function PatientProfile() {
         )}
       >
         <EditMedicalInfoForm 
-            initialData={userProfile}
+            initialData={userProfile} // Pass relevant parts for medical info
             onSave={handleSaveMedicalInfo} 
             onCancel={closeMedicalInfoModal} 
             isLoading={isProcessing} 
@@ -293,7 +406,7 @@ export default function PatientProfile() {
         )}
       >
         <EditInsuranceForm 
-            initialData={userProfile.insurance}
+            initialData={userProfile.insurance} // Pass insurance object
             onSave={handleSaveInsuranceInfo} 
             onCancel={closeInsuranceModal} 
             isLoading={isProcessing} 
@@ -334,4 +447,4 @@ export default function PatientProfile() {
       </Modal>
     </div>
   );
-} 
+}
